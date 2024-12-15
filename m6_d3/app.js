@@ -1,29 +1,40 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { consultarPosts, agregarPost } = require('./consultas.js');
+
+const { consultarPosts, agregarPost, modificarPost, consultarPostDetalle, eliminarPost } = require('./controllers/postsController.js');
 
 app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.status(200).json({ success: true });
+    try {
+        res.status(200).json({success:true});
+    } catch(e) {
+        res.status(500).send(e.message);
+    }
 });
 
 app.get('/posts', async (req, res) => {
-    const data = await consultarPosts();
-    res.status(200).json(data); 
+    await consultarPosts(req, res);
+
+});
+
+app.get('/posts/:id', async (req, res) => {
+    await consultarPostDetalle(req, res);
+
 });
 
 app.post('/posts', async (req, res) => {
-    const { titulo, img, descripcion, likes } = req.body;
-    const result = await agregarPost(titulo, img, descripcion, likes);
+    await agregarPost(req, res)
+});
 
-    if (result.rowCount === 1) {
-        res.status(201).json({ success: true, msg: "El post se insertó correctamente." });
-    } else {
-        res.status(500).json({ success: false, msg: "Error en la operación." });
-    }
+app.put('/posts/:id', async (req, res) => {
+    await modificarPost(req, res);
+});
+
+app.delete('/posts/:id', async (req, res) => {
+    await eliminarPost(req,res);
 });
 
 app.listen(3000, () => {
